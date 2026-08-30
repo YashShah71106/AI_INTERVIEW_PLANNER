@@ -2,6 +2,8 @@ import axios from "axios";
 
 const API_URL = "https://ai-interview-planner-xzw3.onrender.com/api/auth";
 
+// ================= REGISTER =================
+
 export async function register({ username, email, password }) {
     try {
         const response = await axios.post(
@@ -9,20 +11,26 @@ export async function register({ username, email, password }) {
             {
                 username,
                 email,
-                password
+                password,
             },
             {
-                withCredentials: true
+                withCredentials: true,
             }
         );
 
         return response.data;
-
     } catch (err) {
-        console.log(err.response?.data || err.message);
+        console.error(
+            "Register Error:",
+            err.response?.data || err.message
+        );
+
         throw err;
     }
 }
+
+
+// ================= LOGIN =================
 
 export async function login({ email, password }) {
     try {
@@ -30,51 +38,66 @@ export async function login({ email, password }) {
             `${API_URL}/login`,
             {
                 email,
-                password
+                password,
             },
             {
-                withCredentials: true
+                withCredentials: true,
             }
         );
 
         return response.data;
-
     } catch (err) {
-        console.log(err.response?.data || err.message);
+        console.error(
+            "Login Error:",
+            err.response?.data || err.message
+        );
+
         throw err;
     }
 }
+
+
+// ================= LOGOUT =================
 
 export async function logout() {
     try {
         const response = await axios.get(
             `${API_URL}/logout`,
             {
-                withCredentials: true
+                withCredentials: true,
             }
         );
 
         return response.data;
-
     } catch (err) {
-        console.log(err.response?.data || err.message);
+        console.error(
+            "Logout Error:",
+            err.response?.data || err.message
+        );
+
         throw err;
     }
 }
+
+
+// ================= GET CURRENT USER =================
 
 export async function getMe() {
     try {
         const response = await axios.get(
             `${API_URL}/get-me`,
             {
-                withCredentials: true
+                withCredentials: true,
             }
         );
 
         return response.data;
-
     } catch (err) {
-        console.log(err.response?.data || err.message);
+        console.error(
+            "Get Me Error:",
+            err.response?.data || err.message
+        );
+
         throw err;
     }
 }
