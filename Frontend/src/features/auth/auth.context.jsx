@@ -1,28 +1,43 @@
-import { createContext, useState, useEffect } from "react";
+import { createContext, useEffect, useState } from "react";
 import { getMe } from "./services/auth.api";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+
         const checkUser = async () => {
+
             try {
+
                 const data = await getMe();
 
-                setUser(data.user || data);
-            } catch (error) {
-                console.log("User is not logged in");
+                setUser(data.user);
+
+            } catch (err) {
+
+                // User is simply not logged in
                 setUser(null);
+
+                console.log(
+                    "User is not logged in"
+                );
+
             } finally {
+
                 setLoading(false);
+
             }
         };
 
         checkUser();
+
     }, []);
+
 
     return (
         <AuthContext.Provider
