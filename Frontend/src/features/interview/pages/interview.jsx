@@ -201,84 +201,67 @@ const Interview = () => {
     // DOWNLOAD PDF
     // =================================================
 
-    const handleDownloadPDF = async () => {
+   const handleDownloadPDF = async () => {
+    if (!interviewId) {
+        alert("Interview ID not found.");
+        return;
+    }
 
-        if (!interviewId) {
+    try {
+        setDownloading(true);
 
-            alert(
-                "Interview ID not found."
-            );
+        const pdfBlob = await downloadInterviewReportPDF(interviewId);
 
-            return;
-
+        // Check response
+        if (!pdfBlob) {
+            throw new Error("PDF response is empty");
         }
 
+        // Make sure response is Blob
+        const blob =
+            pdfBlob instanceof Blob
+                ? pdfBlob
+                : new Blob([pdfBlob], {
+                      type: "application/pdf",
+                  });
 
-        try {
-
-            setDownloading(true);
-
-
-            const pdfBlob =
-                await downloadInterviewReportPDF(
-                    interviewId
-                );
-
-
-            // Create download URL
-            const url =
-                window.URL.createObjectURL(
-                    pdfBlob
-                );
-
-
-            // Create invisible link
-            const link =
-                document.createElement("a");
-
-
-            link.href = url;
-
-
-            link.download =
-                `interview-report-${interviewId}.pdf`;
-
-
-            document.body.appendChild(link);
-
-
-            link.click();
-
-
-            link.remove();
-
-
-            // Clean URL
-            window.URL.revokeObjectURL(
-                url
-            );
-
-
-        } catch (error) {
-
-            console.error(
-                "PDF Download Error:",
-                error
-            );
-
-
-            alert(
-                "Failed to download PDF. Please try again."
-            );
-
-
-        } finally {
-
-            setDownloading(false);
-
+        if (blob.size === 0) {
+            throw new Error("Generated PDF is empty");
         }
 
-    };
+        // Create download URL
+        const url = window.URL.createObjectURL(blob);
+
+        // Create download link
+        const link = document.createElement("a");
+
+        link.href = url;
+        link.download = `interview-report-${interviewId}.pdf`;
+
+        document.body.appendChild(link);
+        link.click();
+
+        // Cleanup
+        document.body.removeChild(link);
+
+        setTimeout(() => {
+            window.URL.revokeObjectURL(url);
+        }, 1000);
+
+    } catch (error) {
+        console.error("PDF Download Error:", error);
+
+        // Show backend error if available
+        if (error.response?.data) {
+            console.error("Backend PDF Error:", error.response.data);
+        }
+
+        alert("Failed to download PDF. Please try again.");
+
+    } finally {
+        setDownloading(false);
+    }
+};
 
 
     // =================================================

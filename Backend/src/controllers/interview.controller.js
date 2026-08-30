@@ -6,9 +6,11 @@ import generateInterviewReport
 import {
     interViewReportModel
 } from "../models/interViewReport.model.js";
+
 import generateInterviewReportPDF
     from "../services/pdf.service.js";
 
+import mongoose from "mongoose";
 
 
 // =====================================================
@@ -32,10 +34,8 @@ async function generateInterviewReportController(req, res) {
         if (!jobDescription?.trim()) {
 
             return res.status(400).json({
-
-                message:
-                    "Job description is required"
-
+                message: "Job description is required",
+                success: false
             });
 
         }
@@ -51,14 +51,12 @@ async function generateInterviewReportController(req, res) {
         if (!resume && !selfDescription?.trim()) {
 
             return res.status(400).json({
-
                 message:
-                    "Resume or self description is required"
-
+                    "Resume or self description is required",
+                success: false
             });
 
         }
-
 
 
         // =================================================
@@ -70,18 +68,16 @@ async function generateInterviewReportController(req, res) {
 
         if (resume) {
 
-            // Currently backend supports PDF parsing
-
+            // Only PDF supported
             if (
                 resume.mimetype !==
                 "application/pdf"
             ) {
 
                 return res.status(400).json({
-
                     message:
-                        "Only PDF resume is supported currently."
-
+                        "Only PDF resume is supported currently.",
+                    success: false
                 });
 
             }
@@ -101,7 +97,6 @@ async function generateInterviewReportController(req, res) {
         }
 
 
-
         // =================================================
         // AI GENERATION
         // =================================================
@@ -117,7 +112,6 @@ async function generateInterviewReportController(req, res) {
                 jobDescription
 
             });
-
 
 
         // =================================================
@@ -141,7 +135,6 @@ async function generateInterviewReportController(req, res) {
             });
 
 
-
         // =================================================
         // RESPONSE
         // =================================================
@@ -150,6 +143,8 @@ async function generateInterviewReportController(req, res) {
 
             message:
                 "Interview Report Generated Successfully",
+
+            success: true,
 
             interviewReport
 
@@ -168,6 +163,8 @@ async function generateInterviewReportController(req, res) {
 
             message:
                 "Failed to generate interview report",
+
+            success: false,
 
             error:
                 error.message
@@ -206,6 +203,8 @@ async function getAllInterviewReportsController(
             message:
                 "Interview Reports Fetched Successfully",
 
+            success: true,
+
             interviewReports
 
         });
@@ -223,6 +222,8 @@ async function getAllInterviewReportsController(
 
             message:
                 "Failed to fetch interview reports",
+
+            success: false,
 
             error:
                 error.message
@@ -251,6 +252,32 @@ async function getInterviewReportByIdController(
         } = req.params;
 
 
+        // ---------------------------------------------
+        // Validate MongoDB ObjectId
+        // ---------------------------------------------
+
+        if (
+            !mongoose.Types.ObjectId.isValid(
+                interviewId
+            )
+        ) {
+
+            return res.status(400).json({
+
+                message:
+                    "Invalid interview ID",
+
+                success: false
+
+            });
+
+        }
+
+
+        // ---------------------------------------------
+        // Find report belonging to logged-in user
+        // ---------------------------------------------
+
         const interviewReport =
             await interViewReportModel.findOne({
 
@@ -266,7 +293,9 @@ async function getInterviewReportByIdController(
             return res.status(404).json({
 
                 message:
-                    "Interview report not found"
+                    "Interview report not found",
+
+                success: false
 
             });
 
@@ -277,6 +306,8 @@ async function getInterviewReportByIdController(
 
             message:
                 "Interview Report Fetched Successfully",
+
+            success: true,
 
             interviewReport
 
@@ -296,6 +327,8 @@ async function getInterviewReportByIdController(
             message:
                 "Failed to fetch interview report",
 
+            success: false,
+
             error:
                 error.message
 
@@ -306,18 +339,55 @@ async function getInterviewReportByIdController(
 }
 
 
-// ==========================================
-// DOWNLOAD INTERVIEW REPORT AS PDF
-// ==========================================
 
-async function downloadInterviewReportPDFController(req, res) {
+// =====================================================
+// DOWNLOAD INTERVIEW REPORT AS PDF
+// =====================================================
+
+async function downloadInterviewReportPDFController(
+    req,
+    res
+) {
 
     try {
 
-        const { interviewId } = req.params;
+        const {
+            interviewId
+        } = req.params;
 
 
+        console.log(
+            "PDF REQUEST FOR INTERVIEW:",
+            interviewId
+        );
+
+
+        // ---------------------------------------------
+        // Validate interview ID
+        // ---------------------------------------------
+
+        if (
+            !mongoose.Types.ObjectId.isValid(
+                interviewId
+            )
+        ) {
+
+            return res.status(400).json({
+
+                message:
+                    "Invalid interview ID",
+
+                success: false
+
+            });
+
+        }
+
+
+        // ---------------------------------------------
         // Find report belonging to logged-in user
+        // ---------------------------------------------
+
         const interviewReport =
             await interViewReportModel.findOne({
 
@@ -328,42 +398,111 @@ async function downloadInterviewReportPDFController(req, res) {
             });
 
 
-        // Report not found
         if (!interviewReport) {
+
+            console.log(
+                "PDF REPORT NOT FOUND"
+            );
+
 
             return res.status(404).json({
 
                 message:
-                    "Interview report not found"
+                    "Interview report not found",
+
+                success: false
 
             });
 
         }
 
 
+        console.log(
+            "REPORT FOUND. GENERATING PDF..."
+        );
+
+
+        // ---------------------------------------------
         // Generate PDF
+        // ---------------------------------------------
+
         const pdf =
             await generateInterviewReportPDF(
                 interviewReport
             );
 
 
-        // Tell browser this is a PDF
-        res.set({
+        // ---------------------------------------------
+        // Make sure PDF exists
+        // ---------------------------------------------
 
-            "Content-Type":
-                "application/pdf",
+        if (!pdf) {
 
-            "Content-Disposition":
-                `attachment; filename="interview-report-${interviewId}.pdf"`,
+            throw new Error(
+                "PDF generation returned empty result"
+            );
 
-            "Content-Length":
-                pdf.length
-
-        });
+        }
 
 
-        return res.status(200).send(pdf);
+        // ---------------------------------------------
+        // Convert to Buffer if necessary
+        // ---------------------------------------------
+
+        const pdfBuffer =
+            Buffer.isBuffer(pdf)
+                ? pdf
+                : Buffer.from(pdf);
+
+
+        if (pdfBuffer.length === 0) {
+
+            throw new Error(
+                "Generated PDF is empty"
+            );
+
+        }
+
+
+        console.log(
+            "PDF GENERATED:",
+            pdfBuffer.length,
+            "bytes"
+        );
+
+
+        // ---------------------------------------------
+        // PDF RESPONSE HEADERS
+        // ---------------------------------------------
+
+        res.status(200);
+
+        res.setHeader(
+            "Content-Type",
+            "application/pdf"
+        );
+
+        res.setHeader(
+            "Content-Disposition",
+            `attachment; filename="interview-report-${interviewId}.pdf"`
+        );
+
+        res.setHeader(
+            "Content-Length",
+            pdfBuffer.length
+        );
+
+        res.setHeader(
+            "Cache-Control",
+            "no-cache, no-store, must-revalidate"
+        );
+
+
+        // ---------------------------------------------
+        // SEND PDF
+        // ---------------------------------------------
+
+        return res.end(pdfBuffer);
 
 
     } catch (error) {
@@ -374,10 +513,22 @@ async function downloadInterviewReportPDFController(req, res) {
         );
 
 
+        // If headers are already sent,
+        // don't try to send JSON again.
+
+        if (res.headersSent) {
+
+            return res.end();
+
+        }
+
+
         return res.status(500).json({
 
             message:
                 "Failed to generate interview report PDF",
+
+            success: false,
 
             error:
                 error.message
@@ -388,6 +539,11 @@ async function downloadInterviewReportPDFController(req, res) {
 
 }
 
+
+
+// =====================================================
+// EXPORT
+// =====================================================
 
 export default {
 
