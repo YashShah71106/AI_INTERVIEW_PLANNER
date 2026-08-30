@@ -5,7 +5,7 @@ import Register from "./features/auth/pages/register";
 
 import Protected from "./features/auth/components/protected.jsx";
 
-import Home from "./features/interview/pages/home.jsx";
+import Home from "./features/interview/pages/Home.jsx";
 import Interview from "./features/interview/pages/interview.jsx";
 
 import {
