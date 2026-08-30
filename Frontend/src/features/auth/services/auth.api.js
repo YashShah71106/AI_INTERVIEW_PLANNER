@@ -1,78 +1,80 @@
-    import axios from "axios";
+import axios from "axios";
 
-    export async function register({ username, email, password }) {
-        try {
-            const response = await axios.post(
-                "http://localhost:3000/api/auth/register",
-                {
-                    username,
-                    email,
-                    password
-                },
-                {
-                    withCredentials: true
-                }
-            );
+const API_URL = "https://ai-interview-planner-xzw3.onrender.com/api/auth";
 
-            return response.data;
+export async function register({ username, email, password }) {
+    try {
+        const response = await axios.post(
+            `${API_URL}/register`,
+            {
+                username,
+                email,
+                password
+            },
+            {
+                withCredentials: true
+            }
+        );
 
-        } catch (err) {
-            console.log(err.response?.data || err.message);
-            throw err;
-        }
+        return response.data;
+
+    } catch (err) {
+        console.log(err.response?.data || err.message);
+        throw err;
     }
+}
 
-    export async function login({ email, password }) {
-        try {
-            const response = await axios.post(
-                "http://localhost:3000/api/auth/login",
-                {
-                    email,
-                    password
-                },
-                {
-                    withCredentials: true
-                }
-            );
+export async function login({ email, password }) {
+    try {
+        const response = await axios.post(
+            `${API_URL}/login`,
+            {
+                email,
+                password
+            },
+            {
+                withCredentials: true
+            }
+        );
 
-            return response.data;
+        return response.data;
 
-        } catch (err) {
-            console.log(err.response?.data || err.message);;
-            throw err;
-        }
+    } catch (err) {
+        console.log(err.response?.data || err.message);
+        throw err;
     }
+}
 
-    export async function logout() {
-        try {
-            const response = await axios.get(
-                "http://localhost:3000/api/auth/logout",
-                {
-                    withCredentials: true
-                }
-            );
+export async function logout() {
+    try {
+        const response = await axios.get(
+            `${API_URL}/logout`,
+            {
+                withCredentials: true
+            }
+        );
 
-            return response.data;
+        return response.data;
 
-        } catch (err) {
-            console.log(err.response?.data || err.message);
-            throw err;
-        }
+    } catch (err) {
+        console.log(err.response?.data || err.message);
+        throw err;
     }
+}
 
-    export async function getMe() {
-        try {
-            const response = await axios.get(
-                "http://localhost:3000/api/auth/get-me",
-                {
-                    withCredentials: true
-                }
-            );
+export async function getMe() {
+    try {
+        const response = await axios.get(
+            `${API_URL}/get-me`,
+            {
+                withCredentials: true
+            }
+        );
 
-            return response.data;
+        return response.data;
 
-        } catch (err) {
-            console.log(err.response?.data || err.message);
-            throw err;
-        }   
+    } catch (err) {
+        console.log(err.response?.data || err.message);
+        throw err;
     }
+}
