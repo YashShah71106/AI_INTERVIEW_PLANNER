@@ -9,11 +9,21 @@ const Home = () => {
 
     const navigate = useNavigate();
 
+
+    // =====================================================
+    // INTERVIEW
+    // =====================================================
+
     const {
         generateReport,
         reports = [],
         loading
     } = useInterview();
+
+
+    // =====================================================
+    // AUTH
+    // =====================================================
 
     const {
         user,
@@ -21,9 +31,21 @@ const Home = () => {
     } = useAuth();
 
 
+    // =====================================================
+    // FORM STATES
+    // =====================================================
+
     const [jobDescription, setJobDescription] = useState("");
+
     const [selfDescription, setSelfDescription] = useState("");
+
     const [resumeFile, setResumeFile] = useState(null);
+
+
+    // =====================================================
+    // LOGOUT STATE
+    // =====================================================
+
     const [logoutLoading, setLogoutLoading] = useState(false);
 
 
@@ -35,15 +57,19 @@ const Home = () => {
 
         if (logoutLoading) return;
 
+
         try {
 
             setLogoutLoading(true);
 
+
             await handleLogout();
+
 
             navigate("/login", {
                 replace: true
             });
+
 
         } catch (error) {
 
@@ -52,10 +78,13 @@ const Home = () => {
                 error
             );
 
+
             alert(
                 error?.response?.data?.message ||
+                error?.message ||
                 "Logout failed. Please try again."
             );
+
 
         } finally {
 
@@ -75,6 +104,10 @@ const Home = () => {
         e.preventDefault();
 
 
+        // -------------------------------------------------
+        // JOB DESCRIPTION
+        // -------------------------------------------------
+
         if (!jobDescription.trim()) {
 
             alert(
@@ -85,7 +118,14 @@ const Home = () => {
         }
 
 
-        if (!resumeFile && !selfDescription.trim()) {
+        // -------------------------------------------------
+        // RESUME / SELF DESCRIPTION
+        // -------------------------------------------------
+
+        if (
+            !resumeFile &&
+            !selfDescription.trim()
+        ) {
 
             alert(
                 "Please upload a Resume or enter Self Description."
@@ -94,6 +134,10 @@ const Home = () => {
             return;
         }
 
+
+        // -------------------------------------------------
+        // RESUME VALIDATION
+        // -------------------------------------------------
 
         if (resumeFile) {
 
@@ -129,6 +173,10 @@ const Home = () => {
         }
 
 
+        // =================================================
+        // GENERATE REPORT
+        // =================================================
+
         try {
 
             const report =
@@ -149,6 +197,10 @@ const Home = () => {
             );
 
 
+            // -------------------------------------------------
+            // REPORT ID
+            // -------------------------------------------------
+
             const reportId =
                 report?._id ||
                 report?.id ||
@@ -165,6 +217,10 @@ const Home = () => {
                 return;
             }
 
+
+            // -------------------------------------------------
+            // OPEN REPORT
+            // -------------------------------------------------
 
             navigate(
                 `/interview/${reportId}`
@@ -198,12 +254,29 @@ const Home = () => {
 
         if (!id) return;
 
+
         navigate(
             `/interview/${id}`
         );
 
     };
 
+
+    // =====================================================
+    // USER AVATAR
+    // =====================================================
+
+    const userInitial =
+        user?.username
+            ? user.username
+                .charAt(0)
+                .toUpperCase()
+            : "U";
+
+
+    // =====================================================
+    // UI
+    // =====================================================
 
     return (
 
@@ -218,38 +291,81 @@ const Home = () => {
 
                 <div className="home-header-content">
 
+
+                    {/* =================================================
+                        HEADER TITLE
+                    ================================================= */}
+
                     <div>
 
                         <h1>
+
                             Create Your Custom{" "}
-                            <span>Interview Plan</span>
+
+                            <span>
+                                Interview Plan
+                            </span>
+
                         </h1>
 
 
                         <p>
+
                             Let our AI analyze the job requirements and your
                             unique profile to build a
+
                             <br />
+
                             winning strategy.
+
                         </p>
 
                     </div>
 
 
+
                     {/* =================================================
-                        USER + LOGOUT
+                        USER PROFILE
                     ================================================= */}
 
-                    <div className="user-actions">
+                    <div className="user-profile">
 
-                        {user?.username && (
 
-                            <span className="welcome-user">
-                                Hi, {user.username}
+                        {/* USER AVATAR */}
+
+                        <div
+                            className="user-avatar"
+                            aria-label="User profile"
+                        >
+
+                            {userInitial}
+
+                        </div>
+
+
+
+                        {/* USER INFORMATION */}
+
+                        <div className="user-info">
+
+                            <span className="user-name">
+
+                                {user?.username || "User"}
+
                             </span>
 
-                        )}
 
+                            <span className="user-email">
+
+                                {user?.email || ""}
+
+                            </span>
+
+                        </div>
+
+
+
+                        {/* LOGOUT BUTTON */}
 
                         <button
                             type="button"
@@ -265,7 +381,9 @@ const Home = () => {
 
                         </button>
 
+
                     </div>
+
 
                 </div>
 
@@ -291,6 +409,7 @@ const Home = () => {
 
                     <div className="section-heading">
 
+
                         <span
                             className="section-icon"
                             aria-hidden="true"
@@ -298,15 +417,21 @@ const Home = () => {
 
 
                         <label htmlFor="jobDescription">
+
                             Target Job Description
+
                         </label>
 
 
                         <span className="required">
+
                             Required
+
                         </span>
 
+
                     </div>
+
 
 
                     <div className="textarea-wrapper">
@@ -327,8 +452,11 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
 
 
                         <small>
+
                             {jobDescription.length} / 5000 chars
+
                         </small>
+
 
                     </div>
 
@@ -342,16 +470,22 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
 
                 <div className="right">
 
+
                     <div className="section-heading profile-heading">
+
 
                         <span
                             className="section-icon profile-icon"
                             aria-hidden="true"
                         />
 
+
                         <h2>
+
                             Your Profile
+
                         </h2>
+
 
                     </div>
 
@@ -363,15 +497,19 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
 
                     <div className="input-group">
 
+
                         <p className="field-label">
 
                             Upload Resume{" "}
 
                             <small>
+
                                 (Best Results)
+
                             </small>
 
                         </p>
+
 
 
                         <label
@@ -390,10 +528,14 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
 
 
                             <small>
+
                                 PDF or DOCX (Max 5MB)
+
                             </small>
 
+
                         </label>
+
 
 
                         <input
@@ -411,6 +553,7 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
                                 if (!file) return;
 
 
+
                                 if (
                                     file.size >
                                     5 * 1024 * 1024
@@ -423,11 +566,14 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
                                     e.target.value = "";
 
                                     return;
+
                                 }
+
 
 
                                 const fileName =
                                     file.name.toLowerCase();
+
 
 
                                 if (
@@ -442,13 +588,16 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
                                     e.target.value = "";
 
                                     return;
+
                                 }
+
 
 
                                 setResumeFile(file);
 
                             }}
                         />
+
 
                     </div>
 
@@ -461,7 +610,9 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
                     <div className="or-divider">
 
                         <span>
+
                             OR
+
                         </span>
 
                     </div>
@@ -472,13 +623,17 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
                         SELF DESCRIPTION
                     ================================================= */}
 
-                    <div className="input-group self-description-group">
+                    <div
+                        className="input-group self-description-group"
+                    >
 
                         <label
                             className="field-label"
                             htmlFor="selfDescription"
                         >
+
                             Quick Self-Description
+
                         </label>
 
 
@@ -494,6 +649,7 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
                             placeholder="Briefly describe your experience, key skills, and years of experience..."
                         />
 
+
                     </div>
 
 
@@ -505,13 +661,18 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
                     <p className="form-hint">
 
                         <span>
+
                             i
+
                         </span>
+
 
                         Either a Resume or a Self Description is
                         required to generate a personalized plan.
 
+
                     </p>
+
 
                 </div>
 
@@ -522,6 +683,7 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
                 ================================================= */}
 
                 <footer className="card-footer">
+
 
                     <small>
 
@@ -536,6 +698,7 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
                     </small>
 
 
+
                     <button
                         className="button primary-button"
                         type="submit"
@@ -543,7 +706,9 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
                     >
 
                         <span>
+
                             &#10024;
+
                         </span>
 
 
@@ -552,9 +717,12 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
                             : "Generate My Interview Strategy"
                         }
 
+
                     </button>
 
+
                 </footer>
+
 
             </form>
 
@@ -570,15 +738,23 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
             >
 
                 <a href="#privacy">
+
                     Privacy Policy
+
                 </a>
+
 
                 <a href="#terms">
+
                     Terms of Service
+
                 </a>
 
+
                 <a href="#help">
+
                     Help Center
+
                 </a>
 
             </nav>
@@ -591,26 +767,36 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
 
             <section className="previous-reports">
 
+
                 <div className="previous-reports__header">
+
 
                     <div>
 
                         <span className="previous-reports__eyebrow">
+
                             YOUR HISTORY
+
                         </span>
 
 
                         <h2>
+
                             Previous Interview Reports
+
                         </h2>
 
 
                         <p>
+
                             View and continue your previously
                             generated interview plans.
+
                         </p>
 
+
                     </div>
+
 
 
                     <span className="reports-count">
@@ -624,6 +810,7 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
 
                     </span>
 
+
                 </div>
 
 
@@ -636,22 +823,31 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
 
                     <div className="no-reports">
 
+
                         <div className="no-reports__icon">
+
                             📋
+
                         </div>
 
 
                         <h3>
+
                             No interview reports yet
+
                         </h3>
 
 
                         <p>
+
                             Generate your first interview strategy
                             and it will appear here.
+
                         </p>
 
+
                     </div>
+
 
                 ) : (
 
@@ -662,7 +858,9 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
 
                     <div className="previous-reports__grid">
 
+
                         {reports.map((report, index) => {
+
 
                             const reportId =
                                 report?._id ||
@@ -682,7 +880,9 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
                                     : "Personalized interview preparation plan";
 
 
+
                             return (
+
 
                                 <article
                                     className="report-card"
@@ -692,8 +892,11 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
 
                                     <div className="report-card__top">
 
+
                                         <div className="report-card__icon">
+
                                             ✦
+
                                         </div>
 
 
@@ -706,6 +909,7 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
                                             Match
 
                                         </span>
+
 
                                     </div>
 
@@ -742,25 +946,33 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
                                     ) &&
                                         report.skillGaps.length > 0 && (
 
+
                                             <div className="report-card__skills">
+
 
                                                 {report.skillGaps
                                                     .slice(0, 4)
                                                     .map((gap, i) => (
 
+
                                                         <span key={i}>
+
 
                                                             {typeof gap === "object"
                                                                 ? gap?.skill || "Skill"
                                                                 : gap
                                                             }
 
+
                                                         </span>
+
 
                                                     ))
                                                 }
 
+
                                             </div>
+
 
                                         )
                                     }
@@ -773,9 +985,13 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
 
                                     <div className="report-card__footer">
 
+
                                         <small>
+
                                             Interview Report
+
                                         </small>
+
 
 
                                         <button
@@ -792,19 +1008,26 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
 
                                         </button>
 
+
                                     </div>
 
+
                                 </article>
+
 
                             );
 
                         })}
 
+
                     </div>
+
 
                 )}
 
+
             </section>
+
 
         </main>
 
