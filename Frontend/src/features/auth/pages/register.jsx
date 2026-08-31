@@ -41,24 +41,90 @@ const Register = () => {
     };
 
 
+    // =====================================================
+    // PREMIUM LOADING SCREEN
+    // =====================================================
+
     if (loading) {
 
         return (
-            <main>
-                <h1>Loading...</h1>
+            <main className="auth-loading">
+
+                <div className="loader-orbit">
+
+                    <div className="loader-ring ring-one"></div>
+
+                    <div className="loader-ring ring-two"></div>
+
+                    <div className="loader-ring ring-three"></div>
+
+                    <div className="loader-core">
+                        <span>✦</span>
+                    </div>
+
+                    <div className="loader-dot dot-one"></div>
+                    <div className="loader-dot dot-two"></div>
+                    <div className="loader-dot dot-three"></div>
+
+                </div>
+
+
+                <div className="loading-content">
+
+                    <h2>
+                        Creating your account
+                        <span className="loading-dots">
+                            <span>.</span>
+                            <span>.</span>
+                            <span>.</span>
+                        </span>
+                    </h2>
+
+                    <p>
+                        Setting things up for you
+                    </p>
+
+                    <div className="loading-progress">
+                        <span></span>
+                    </div>
+
+                </div>
+
             </main>
         );
     }
 
 
     return (
-        <main>
+        <main className="auth-page">
+
+            <div className="auth-background-glow glow-one"></div>
+            <div className="auth-background-glow glow-two"></div>
+
 
             <div className="form-container">
 
-                <h1>Register</h1>
+                {/* AUTH ICON */}
+
+                <div className="auth-icon">
+                    <span>✦</span>
+                </div>
+
+
+                <h1>
+                    Create Account
+                </h1>
+
+
+                <p className="auth-subtitle">
+                    Create your account and start preparing
+                    for your next interview.
+                </p>
+
 
                 <form onSubmit={handleSubmit}>
+
+                    {/* USERNAME */}
 
                     <div className="input-group">
 
@@ -67,6 +133,7 @@ const Register = () => {
                         </label>
 
                         <input
+                            value={username}
                             onChange={(e) =>
                                 setUsername(e.target.value)
                             }
@@ -74,11 +141,14 @@ const Register = () => {
                             id="username"
                             name="username"
                             placeholder="Enter Your Username"
+                            autoComplete="username"
                             required
                         />
 
                     </div>
 
+
+                    {/* EMAIL */}
 
                     <div className="input-group">
 
@@ -87,6 +157,7 @@ const Register = () => {
                         </label>
 
                         <input
+                            value={email}
                             onChange={(e) =>
                                 setEmail(e.target.value)
                             }
@@ -94,11 +165,14 @@ const Register = () => {
                             id="email"
                             name="email"
                             placeholder="Enter Your Email Here"
+                            autoComplete="email"
                             required
                         />
 
                     </div>
 
+
+                    {/* PASSWORD */}
 
                     <div className="input-group">
 
@@ -107,6 +181,7 @@ const Register = () => {
                         </label>
 
                         <input
+                            value={password}
                             onChange={(e) =>
                                 setPassword(e.target.value)
                             }
@@ -114,27 +189,36 @@ const Register = () => {
                             id="password"
                             name="password"
                             placeholder="Enter Your Password Here"
+                            autoComplete="new-password"
                             required
                         />
 
                     </div>
 
 
+                    {/* REGISTER BUTTON */}
+
                     <button
                         type="submit"
                         className="button primary-button"
+                        disabled={loading}
                     >
-                        Register
+                        Create Account
                     </button>
 
                 </form>
 
 
-                <p>
-                    Already Have An Account?{" "}
+                {/* LOGIN LINK */}
+
+                <p className="auth-switch">
+
+                    Already have an account?{" "}
+
                     <Link to="/login">
                         Login
                     </Link>
+
                 </p>
 
             </div>
