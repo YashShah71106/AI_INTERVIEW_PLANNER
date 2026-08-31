@@ -41,7 +41,6 @@ function extractCandidateInfo(resume = "") {
             .replace(/\s+/g, " ")
             .trim();
 
-        // Skip obvious headings
         if (
             !cleaned ||
             /^(resume|curriculum vitae|cv)$/i.test(cleaned) ||
@@ -52,7 +51,6 @@ function extractCandidateInfo(resume = "") {
             continue;
         }
 
-        // Name normally contains letters/spaces only
         if (
             /^[A-Za-z][A-Za-z .'-]{2,60}$/.test(cleaned)
         ) {
@@ -118,11 +116,6 @@ function extractCandidateInfo(resume = "") {
 
     let location = "";
 
-    // Common pattern:
-    // Bhopal, India
-    // Mumbai, India
-    // Delhi, India
-
     const locationMatch = text.match(
         /\b([A-Z][A-Za-z .'-]{2,30},\s*[A-Z][A-Za-z .'-]{2,30})\b/
     );
@@ -151,20 +144,34 @@ const generateInterviewReportPDF = async (report) => {
 
     let browser;
 
-
     try {
 
         // =================================================
-        // LAUNCH PUPPETEER
+        // LAUNCH PUPPETEER - RENDER SAFE
         // =================================================
+
+        const executablePath =
+            process.env.PUPPETEER_EXECUTABLE_PATH ||
+            puppeteer.executablePath();
+
+        console.log(
+            "Puppeteer executable path:",
+            executablePath
+        );
 
         browser = await puppeteer.launch({
 
             headless: true,
 
+            executablePath,
+
             args: [
                 "--no-sandbox",
-                "--disable-setuid-sandbox"
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
+                "--no-zygote",
+                "--single-process"
             ]
 
         });
@@ -312,7 +319,6 @@ const generateInterviewReportPDF = async (report) => {
                         "";
 
                     return `
-
                         <div class="strength-card">
 
                             <div class="strength-title">
@@ -324,7 +330,6 @@ const generateInterviewReportPDF = async (report) => {
                             </div>
 
                         </div>
-
                     `;
 
                 }).join("")
@@ -348,34 +353,27 @@ const generateInterviewReportPDF = async (report) => {
                         skill?.name ??
                         "Skill";
 
-
                     const currentLevel =
                         skill?.currentLevel ??
                         "Not specified";
-
 
                     const requiredLevel =
                         skill?.requiredLevel ??
                         "Not specified";
 
-
                     const gap =
                         skill?.gap ??
                         "";
-
 
                     const recommendation =
                         skill?.recommendation ??
                         "";
 
-
                     const severity =
                         skill?.severity ??
                         "Medium";
 
-
                     return `
-
                         <div class="skill-gap-card">
 
                             <div class="skill-gap-header">
@@ -390,11 +388,11 @@ const generateInterviewReportPDF = async (report) => {
 
                             </div>
 
-
                             <div class="skill-levels">
 
                                 <div>
                                     <span>Current Level</span>
+
                                     <strong>
                                         ${escapeHtml(currentLevel)}
                                     </strong>
@@ -402,6 +400,7 @@ const generateInterviewReportPDF = async (report) => {
 
                                 <div>
                                     <span>Required Level</span>
+
                                     <strong>
                                         ${escapeHtml(requiredLevel)}
                                     </strong>
@@ -409,10 +408,8 @@ const generateInterviewReportPDF = async (report) => {
 
                             </div>
 
-
-                            ${
-                                gap
-                                    ? `
+                            ${gap
+                            ? `
                                         <div class="skill-detail">
 
                                             <strong>Gap:</strong>
@@ -421,26 +418,25 @@ const generateInterviewReportPDF = async (report) => {
 
                                         </div>
                                     `
-                                    : ""
-                            }
+                            : ""
+                        }
 
-
-                            ${
-                                recommendation
-                                    ? `
+                            ${recommendation
+                            ? `
                                         <div class="skill-detail recommendation">
 
-                                            <strong>Recommendation:</strong>
+                                            <strong>
+                                                Recommendation:
+                                            </strong>
 
                                             ${escapeHtml(recommendation)}
 
                                         </div>
                                     `
-                                    : ""
-                            }
+                            : ""
+                        }
 
                         </div>
-
                     `;
 
                 }).join("")
@@ -464,27 +460,22 @@ const generateInterviewReportPDF = async (report) => {
                             typeof question === "string"
                                 ? question
                                 : question?.question ??
-                                  question?.text ??
-                                  "";
-
+                                question?.text ??
+                                "";
 
                         const intention =
                             question?.intention ??
                             "";
 
-
                         const answer =
                             question?.answer ??
                             "";
-
 
                         const difficulty =
                             question?.difficulty ??
                             "Medium";
 
-
                         return `
-
                             <div class="question-card">
 
                                 <div class="question-header">
@@ -499,17 +490,14 @@ const generateInterviewReportPDF = async (report) => {
 
                                 </div>
 
-
                                 <div class="question-text">
 
                                     ${escapeHtml(questionText)}
 
                                 </div>
 
-
-                                ${
-                                    intention
-                                        ? `
+                                ${intention
+                                ? `
                                             <div class="question-info">
 
                                                 <strong>
@@ -522,13 +510,11 @@ const generateInterviewReportPDF = async (report) => {
 
                                             </div>
                                         `
-                                        : ""
-                                }
+                                : ""
+                            }
 
-
-                                ${
-                                    answer
-                                        ? `
+                                ${answer
+                                ? `
                                             <div class="answer-box">
 
                                                 <strong>
@@ -541,11 +527,10 @@ const generateInterviewReportPDF = async (report) => {
 
                                             </div>
                                         `
-                                        : ""
-                                }
+                                : ""
+                            }
 
                             </div>
-
                         `;
 
                     }
@@ -570,27 +555,22 @@ const generateInterviewReportPDF = async (report) => {
                             typeof question === "string"
                                 ? question
                                 : question?.question ??
-                                  question?.text ??
-                                  "";
-
+                                question?.text ??
+                                "";
 
                         const intention =
                             question?.intention ??
                             "";
 
-
                         const answer =
                             question?.answer ??
                             "";
-
 
                         const difficulty =
                             question?.difficulty ??
                             "Medium";
 
-
                         return `
-
                             <div class="question-card">
 
                                 <div class="question-header">
@@ -605,17 +585,14 @@ const generateInterviewReportPDF = async (report) => {
 
                                 </div>
 
-
                                 <div class="question-text">
 
                                     ${escapeHtml(questionText)}
 
                                 </div>
 
-
-                                ${
-                                    intention
-                                        ? `
+                                ${intention
+                                ? `
                                             <div class="question-info">
 
                                                 <strong>
@@ -628,13 +605,11 @@ const generateInterviewReportPDF = async (report) => {
 
                                             </div>
                                         `
-                                        : ""
-                                }
+                                : ""
+                            }
 
-
-                                ${
-                                    answer
-                                        ? `
+                                ${answer
+                                ? `
                                             <div class="answer-box">
 
                                                 <strong>
@@ -647,11 +622,10 @@ const generateInterviewReportPDF = async (report) => {
 
                                             </div>
                                         `
-                                        : ""
-                                }
+                                : ""
+                            }
 
                             </div>
-
                         `;
 
                     }
@@ -676,29 +650,22 @@ const generateInterviewReportPDF = async (report) => {
                             item?.day ??
                             index + 1;
 
-
                         const focus =
                             item?.focus ??
                             item?.title ??
                             "Preparation";
-
 
                         const tasks =
                             Array.isArray(item?.tasks)
                                 ? item.tasks
                                 : [];
 
-
                         return `
-
                             <div class="roadmap-card">
 
                                 <div class="roadmap-day">
-
                                     DAY ${escapeHtml(day)}
-
                                 </div>
-
 
                                 <div class="roadmap-content">
 
@@ -706,29 +673,26 @@ const generateInterviewReportPDF = async (report) => {
                                         ${escapeHtml(focus)}
                                     </h3>
 
-
-                                    ${
-                                        tasks.length
-                                            ? `
+                                    ${tasks.length
+                                ? `
                                                 <ul>
 
                                                     ${tasks.map(
-                                                        task => `
+                                    task => `
                                                             <li>
                                                                 ${escapeHtml(task)}
                                                             </li>
                                                         `
-                                                    ).join("")}
+                                ).join("")}
 
                                                 </ul>
                                             `
-                                            : ""
-                                    }
+                                : ""
+                            }
 
                                 </div>
 
                             </div>
-
                         `;
 
                     }
@@ -766,24 +730,17 @@ const generateInterviewReportPDF = async (report) => {
 
         const contactParts = [];
 
-
         if (candidate.location) {
-
             contactParts.push(
                 escapeHtml(candidate.location)
             );
-
         }
 
-
         if (candidate.phone) {
-
             contactParts.push(
                 escapeHtml(candidate.phone)
             );
-
         }
-
 
         const contactLine =
             contactParts.join("  |  ");
@@ -791,33 +748,23 @@ const generateInterviewReportPDF = async (report) => {
 
         const socialParts = [];
 
-
         if (candidate.email) {
-
             socialParts.push(
                 escapeHtml(candidate.email)
             );
-
         }
 
-
         if (candidate.linkedin) {
-
             socialParts.push(
                 `<span>LinkedIn</span>`
             );
-
         }
 
-
         if (candidate.github) {
-
             socialParts.push(
                 `<span>GitHub</span>`
             );
-
         }
-
 
         const socialLine =
             socialParts.join("  |  ");
@@ -841,18 +788,14 @@ const generateInterviewReportPDF = async (report) => {
     ${escapeHtml(candidate.name)} - Interview Preparation
 </title>
 
-
 <style>
 
 * {
     box-sizing: border-box;
 }
 
-
 body {
-
     margin: 0;
-
     padding: 0;
 
     font-family:
@@ -865,12 +808,9 @@ body {
     color: #1f2937;
 
     line-height: 1.55;
-
 }
 
-
 .container {
-
     width: 100%;
 
     max-width: 900px;
@@ -878,25 +818,15 @@ body {
     margin: 0 auto;
 
     padding: 42px 48px;
-
 }
 
-
-/* =====================================================
-   CANDIDATE HEADER
-===================================================== */
-
 .candidate-header {
-
     padding-bottom: 20px;
 
     border-bottom: 2px solid #374151;
-
 }
 
-
 .candidate-name {
-
     margin: 0;
 
     font-size: 31px;
@@ -904,34 +834,25 @@ body {
     font-weight: 700;
 
     color: #111827;
-
 }
 
-
 .contact-line {
-
     margin-top: 7px;
 
     font-size: 12px;
 
     color: #4b5563;
-
 }
 
-
 .social-line {
-
     margin-top: 3px;
 
     font-size: 12px;
 
     color: #4b5563;
-
 }
 
-
 .target-role {
-
     margin-top: 12px;
 
     font-size: 14px;
@@ -939,23 +860,13 @@ body {
     font-weight: 600;
 
     color: #374151;
-
 }
-
-
-/* =====================================================
-   SECTIONS
-===================================================== */
 
 .section {
-
     margin-top: 27px;
-
 }
 
-
 .section-title {
-
     margin: 0 0 13px 0;
 
     padding-bottom: 6px;
@@ -969,31 +880,17 @@ body {
     color: #111827;
 
     text-transform: uppercase;
-
 }
 
-
-/* =====================================================
-   SUMMARY
-===================================================== */
-
 .summary {
-
     font-size: 13px;
 
     color: #374151;
 
     text-align: justify;
-
 }
 
-
-/* =====================================================
-   MATCH SCORE
-===================================================== */
-
 .match-box {
-
     display: flex;
 
     align-items: center;
@@ -1009,97 +906,65 @@ body {
     border-radius: 8px;
 
     background: #f9fafb;
-
 }
 
-
 .match-score {
-
     font-size: 40px;
 
     font-weight: 700;
 
     color: #111827;
-
 }
 
-
 .match-verdict {
-
     font-size: 17px;
 
     font-weight: 700;
 
     color: #111827;
-
 }
 
-
 .match-explanation {
-
     margin-top: 5px;
 
     font-size: 12px;
 
     color: #4b5563;
-
 }
 
-
-/* =====================================================
-   STRENGTHS
-===================================================== */
-
 .strength-grid {
-
     display: grid;
 
     grid-template-columns: 1fr 1fr;
 
     gap: 12px;
-
 }
 
-
 .strength-card {
-
     padding: 13px;
 
     border-left: 3px solid #374151;
 
     background: #f9fafb;
-
 }
 
-
 .strength-title {
-
     font-weight: 700;
 
     font-size: 13px;
 
     color: #111827;
-
 }
 
-
 .strength-description {
-
     margin-top: 4px;
 
     font-size: 12px;
 
     color: #4b5563;
-
 }
 
-
-/* =====================================================
-   SKILL GAPS
-===================================================== */
-
 .skill-gap-card {
-
     margin-bottom: 12px;
 
     padding: 15px;
@@ -1109,34 +974,25 @@ body {
     border-radius: 7px;
 
     page-break-inside: avoid;
-
 }
 
-
 .skill-gap-header {
-
     display: flex;
 
     justify-content: space-between;
 
     align-items: center;
-
 }
 
-
 .skill-name {
-
     font-size: 14px;
 
     font-weight: 700;
 
     color: #111827;
-
 }
 
-
 .severity {
-
     padding: 3px 9px;
 
     border-radius: 10px;
@@ -1144,39 +1000,27 @@ body {
     font-size: 10px;
 
     font-weight: 700;
-
 }
 
-
 .severity.low {
-
     background: #ecfdf5;
 
     color: #047857;
-
 }
 
-
 .severity.medium {
-
     background: #fffbeb;
 
     color: #b45309;
-
 }
 
-
 .severity.high {
-
     background: #fef2f2;
 
     color: #b91c1c;
-
 }
 
-
 .skill-levels {
-
     display: grid;
 
     grid-template-columns: 1fr 1fr;
@@ -1184,65 +1028,43 @@ body {
     gap: 15px;
 
     margin-top: 10px;
-
 }
 
-
 .skill-levels div {
-
     display: flex;
 
     flex-direction: column;
-
 }
 
-
 .skill-levels span {
-
     font-size: 10px;
 
     color: #6b7280;
 
     text-transform: uppercase;
-
 }
 
-
 .skill-levels strong {
-
     font-size: 12px;
 
     color: #374151;
-
 }
 
-
 .skill-detail {
-
     margin-top: 9px;
 
     font-size: 12px;
 
     color: #4b5563;
-
 }
 
-
 .recommendation {
-
     padding-top: 8px;
 
     border-top: 1px solid #e5e7eb;
-
 }
 
-
-/* =====================================================
-   QUESTIONS
-===================================================== */
-
 .question-card {
-
     margin-bottom: 14px;
 
     padding: 16px;
@@ -1252,34 +1074,25 @@ body {
     border-radius: 7px;
 
     page-break-inside: avoid;
-
 }
 
-
 .question-header {
-
     display: flex;
 
     align-items: center;
 
     justify-content: space-between;
-
 }
 
-
 .question-number {
-
     font-size: 13px;
 
     font-weight: 700;
 
     color: #111827;
-
 }
 
-
 .difficulty {
-
     padding: 3px 8px;
 
     border-radius: 10px;
@@ -1287,39 +1100,27 @@ body {
     font-size: 10px;
 
     font-weight: 700;
-
 }
 
-
 .difficulty.easy {
-
     background: #ecfdf5;
 
     color: #047857;
-
 }
 
-
 .difficulty.medium {
-
     background: #fffbeb;
 
     color: #b45309;
-
 }
 
-
 .difficulty.hard {
-
     background: #fef2f2;
 
     color: #b91c1c;
-
 }
 
-
 .question-text {
-
     margin-top: 8px;
 
     font-size: 13px;
@@ -1327,45 +1128,33 @@ body {
     font-weight: 600;
 
     color: #111827;
-
 }
 
-
 .question-info {
-
     margin-top: 11px;
 
     padding-top: 9px;
 
     border-top: 1px solid #e5e7eb;
-
 }
-
 
 .question-info strong,
 .answer-box strong {
-
     font-size: 11px;
 
     color: #374151;
-
 }
-
 
 .question-info p,
 .answer-box p {
-
     margin: 3px 0 0;
 
     font-size: 11px;
 
     color: #4b5563;
-
 }
 
-
 .answer-box {
-
     margin-top: 10px;
 
     padding: 10px;
@@ -1373,16 +1162,9 @@ body {
     background: #f9fafb;
 
     border-radius: 5px;
-
 }
 
-
-/* =====================================================
-   ROADMAP
-===================================================== */
-
 .roadmap-card {
-
     display: flex;
 
     gap: 18px;
@@ -1396,12 +1178,9 @@ body {
     border-radius: 7px;
 
     page-break-inside: avoid;
-
 }
 
-
 .roadmap-day {
-
     min-width: 65px;
 
     font-size: 11px;
@@ -1409,54 +1188,35 @@ body {
     font-weight: 700;
 
     color: #111827;
-
 }
-
 
 .roadmap-content {
-
     flex: 1;
-
 }
 
-
 .roadmap-content h3 {
-
     margin: 0;
 
     font-size: 14px;
 
     color: #111827;
-
 }
 
-
 .roadmap-content ul {
-
     margin: 6px 0 0 17px;
 
     padding: 0;
-
 }
 
-
 .roadmap-content li {
-
     margin-bottom: 3px;
 
     font-size: 11px;
 
     color: #4b5563;
-
 }
 
-
-/* =====================================================
-   READINESS
-===================================================== */
-
 .readiness-box {
-
     padding: 18px;
 
     border: 1px solid #d1d5db;
@@ -1464,34 +1224,25 @@ body {
     border-radius: 8px;
 
     background: #f9fafb;
-
 }
 
-
 .readiness-score {
-
     font-size: 34px;
 
     font-weight: 700;
 
     color: #111827;
-
 }
 
-
 .readiness-summary {
-
     margin-top: 5px;
 
     font-size: 12px;
 
     color: #4b5563;
-
 }
 
-
 .focus-tags {
-
     display: flex;
 
     flex-wrap: wrap;
@@ -1499,12 +1250,9 @@ body {
     gap: 7px;
 
     margin-top: 12px;
-
 }
 
-
 .focus-tag {
-
     padding: 5px 9px;
 
     border: 1px solid #d1d5db;
@@ -1516,31 +1264,17 @@ body {
     color: #374151;
 
     background: #ffffff;
-
 }
 
-
-/* =====================================================
-   EMPTY
-===================================================== */
-
 .empty-message {
-
     padding: 12px;
 
     font-size: 12px;
 
     color: #6b7280;
-
 }
 
-
-/* =====================================================
-   FOOTER
-===================================================== */
-
 .footer {
-
     margin-top: 35px;
 
     padding-top: 12px;
@@ -1552,13 +1286,7 @@ body {
     font-size: 10px;
 
     color: #9ca3af;
-
 }
-
-
-/* =====================================================
-   PRINT
-===================================================== */
 
 @media print {
 
@@ -1576,15 +1304,9 @@ body {
 
 </head>
 
-
 <body>
 
 <div class="container">
-
-
-    <!-- =================================================
-         CANDIDATE HEADER
-    ================================================== -->
 
     <div class="candidate-header">
 
@@ -1592,28 +1314,23 @@ body {
             ${escapeHtml(candidate.name)}
         </h1>
 
-
-        ${
-            contactLine
+        ${contactLine
                 ? `
                     <div class="contact-line">
                         ${contactLine}
                     </div>
                 `
                 : ""
-        }
+            }
 
-
-        ${
-            socialLine
+        ${socialLine
                 ? `
                     <div class="social-line">
                         ${socialLine}
                     </div>
                 `
                 : ""
-        }
-
+            }
 
         <div class="target-role">
 
@@ -1625,14 +1342,8 @@ body {
     </div>
 
 
-
-    <!-- =================================================
-         PROFESSIONAL SUMMARY
-    ================================================== -->
-
-    ${
-        candidateSummary
-            ? `
+    ${candidateSummary
+                ? `
 
                 <div class="section">
 
@@ -1640,31 +1351,22 @@ body {
                         Professional Summary
                     </h2>
 
-
                     <div class="summary">
-
                         ${escapeHtml(candidateSummary)}
-
                     </div>
 
                 </div>
 
             `
-            : ""
-    }
+                : ""
+            }
 
-
-
-    <!-- =================================================
-         OVERALL MATCH
-    ================================================== -->
 
     <div class="section">
 
         <h2 class="section-title">
             Overall Match
         </h2>
-
 
         <div class="match-box">
 
@@ -1676,25 +1378,20 @@ body {
 
             </div>
 
-
             <div style="flex:1">
 
                 <div class="match-verdict">
                     ${escapeHtml(matchVerdict)}
                 </div>
 
-
-                ${
-                    matchExplanation
-                        ? `
+                ${matchExplanation
+                ? `
                             <div class="match-explanation">
-
                                 ${escapeHtml(matchExplanation)}
-
                             </div>
                         `
-                        : ""
-                }
+                : ""
+            }
 
             </div>
 
@@ -1703,17 +1400,11 @@ body {
     </div>
 
 
-
-    <!-- =================================================
-         KEY STRENGTHS
-    ================================================== -->
-
     <div class="section">
 
         <h2 class="section-title">
             Key Strengths
         </h2>
-
 
         <div class="strength-grid">
 
@@ -1724,27 +1415,16 @@ body {
     </div>
 
 
-
-    <!-- =================================================
-         SKILL GAPS
-    ================================================== -->
-
     <div class="section">
 
         <h2 class="section-title">
             Skill Gaps & Recommendations
         </h2>
 
-
         ${skillGapsHtml}
 
     </div>
 
-
-
-    <!-- =================================================
-         TECHNICAL QUESTIONS
-    ================================================== -->
 
     <div class="section">
 
@@ -1752,16 +1432,10 @@ body {
             Technical Interview Questions
         </h2>
 
-
         ${technicalQuestionsHtml}
 
     </div>
 
-
-
-    <!-- =================================================
-         BEHAVIOURAL QUESTIONS
-    ================================================== -->
 
     <div class="section">
 
@@ -1769,16 +1443,10 @@ body {
             Behavioural Interview Questions
         </h2>
 
-
         ${behaviouralQuestionsHtml}
 
     </div>
 
-
-
-    <!-- =================================================
-         PREPARATION ROADMAP
-    ================================================== -->
 
     <div class="section">
 
@@ -1786,23 +1454,16 @@ body {
             5-Day Preparation Roadmap
         </h2>
 
-
         ${roadmapHtml}
 
     </div>
 
-
-
-    <!-- =================================================
-         FINAL READINESS
-    ================================================== -->
 
     <div class="section">
 
         <h2 class="section-title">
             Final Readiness
         </h2>
-
 
         <div class="readiness-box">
 
@@ -1812,19 +1473,14 @@ body {
 
             </div>
 
-
-            ${
-                readinessSummary
-                    ? `
+            ${readinessSummary
+                ? `
                         <div class="readiness-summary">
-
                             ${escapeHtml(readinessSummary)}
-
                         </div>
                     `
-                    : ""
+                : ""
             }
-
 
             <div class="focus-tags">
 
@@ -1837,17 +1493,11 @@ body {
     </div>
 
 
-
-    <!-- =================================================
-         FOOTER
-    ================================================== -->
-
     <div class="footer">
 
         Personalized interview preparation report
 
     </div>
-
 
 </div>
 
@@ -1855,7 +1505,7 @@ body {
 
 </html>
 
-        `;
+`;
 
 
         // =================================================
@@ -1863,9 +1513,7 @@ body {
         // =================================================
 
         await page.setContent(html, {
-
             waitUntil: "networkidle0"
-
         });
 
 

@@ -2,6 +2,7 @@ import "../styles/home.scss";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useInterview } from "../hooks/useInterview.jsx";
+import { useAuth } from "../../auth/hooks/useAuth.js";
 
 
 const Home = () => {
@@ -14,10 +15,55 @@ const Home = () => {
         loading
     } = useInterview();
 
+    const {
+        user,
+        handleLogout
+    } = useAuth();
+
 
     const [jobDescription, setJobDescription] = useState("");
     const [selfDescription, setSelfDescription] = useState("");
     const [resumeFile, setResumeFile] = useState(null);
+    const [logoutLoading, setLogoutLoading] = useState(false);
+
+
+    // =====================================================
+    // LOGOUT
+    // =====================================================
+
+    const handleLogoutClick = async () => {
+
+        if (logoutLoading) return;
+
+        try {
+
+            setLogoutLoading(true);
+
+            await handleLogout();
+
+            navigate("/login", {
+                replace: true
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Logout Error:",
+                error
+            );
+
+            alert(
+                error?.response?.data?.message ||
+                "Logout failed. Please try again."
+            );
+
+        } finally {
+
+            setLogoutLoading(false);
+
+        }
+
+    };
 
 
     // =====================================================
@@ -31,7 +77,9 @@ const Home = () => {
 
         if (!jobDescription.trim()) {
 
-            alert("Please enter Job Description.");
+            alert(
+                "Please enter Job Description."
+            );
 
             return;
         }
@@ -49,9 +97,14 @@ const Home = () => {
 
         if (resumeFile) {
 
-            if (resumeFile.size > 5 * 1024 * 1024) {
+            if (
+                resumeFile.size >
+                5 * 1024 * 1024
+            ) {
 
-                alert("Resume must be less than 5MB.");
+                alert(
+                    "Resume must be less than 5MB."
+                );
 
                 return;
             }
@@ -72,18 +125,22 @@ const Home = () => {
 
                 return;
             }
+
         }
 
 
         try {
 
-            const report = await generateReport({
+            const report =
+                await generateReport({
 
-                jobDescription,
-                selfDescription,
-                resumeFile
+                    jobDescription,
 
-            });
+                    selfDescription,
+
+                    resumeFile
+
+                });
 
 
             console.log(
@@ -93,7 +150,10 @@ const Home = () => {
 
 
             const reportId =
-                report?._id || report?.id;
+                report?._id ||
+                report?.id ||
+                report?.interviewReport?._id ||
+                report?.interviewReport?.id;
 
 
             if (!reportId) {
@@ -130,7 +190,6 @@ const Home = () => {
     };
 
 
-
     // =====================================================
     // VIEW REPORT
     // =====================================================
@@ -146,7 +205,6 @@ const Home = () => {
     };
 
 
-
     return (
 
         <main className="home">
@@ -158,18 +216,58 @@ const Home = () => {
 
             <header className="home-header">
 
-                <h1>
-                    Create Your Custom{" "}
-                    <span>Interview Plan</span>
-                </h1>
+                <div className="home-header-content">
+
+                    <div>
+
+                        <h1>
+                            Create Your Custom{" "}
+                            <span>Interview Plan</span>
+                        </h1>
 
 
-                <p>
-                    Let our AI analyze the job requirements and your
-                    unique profile to build a
-                    <br />
-                    winning strategy.
-                </p>
+                        <p>
+                            Let our AI analyze the job requirements and your
+                            unique profile to build a
+                            <br />
+                            winning strategy.
+                        </p>
+
+                    </div>
+
+
+                    {/* =================================================
+                        USER + LOGOUT
+                    ================================================= */}
+
+                    <div className="user-actions">
+
+                        {user?.username && (
+
+                            <span className="welcome-user">
+                                Hi, {user.username}
+                            </span>
+
+                        )}
+
+
+                        <button
+                            type="button"
+                            className="logout-button"
+                            onClick={handleLogoutClick}
+                            disabled={logoutLoading}
+                        >
+
+                            {logoutLoading
+                                ? "Logging out..."
+                                : "Logout"
+                            }
+
+                        </button>
+
+                    </div>
+
+                </div>
 
             </header>
 
@@ -185,7 +283,9 @@ const Home = () => {
             >
 
 
-                {/* LEFT */}
+                {/* =================================================
+                    LEFT
+                ================================================= */}
 
                 <div className="left">
 
@@ -195,6 +295,7 @@ const Home = () => {
                             className="section-icon"
                             aria-hidden="true"
                         />
+
 
                         <label htmlFor="jobDescription">
                             Target Job Description
@@ -235,7 +336,9 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
 
 
 
-                {/* RIGHT */}
+                {/* =================================================
+                    RIGHT
+                ================================================= */}
 
                 <div className="right">
 
@@ -254,7 +357,9 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
 
 
 
-                    {/* RESUME */}
+                    {/* =================================================
+                        RESUME
+                    ================================================= */}
 
                     <div className="input-group">
 
@@ -349,15 +454,23 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
 
 
 
-                    {/* OR */}
+                    {/* =================================================
+                        OR
+                    ================================================= */}
 
                     <div className="or-divider">
-                        <span>OR</span>
+
+                        <span>
+                            OR
+                        </span>
+
                     </div>
 
 
 
-                    {/* SELF DESCRIPTION */}
+                    {/* =================================================
+                        SELF DESCRIPTION
+                    ================================================= */}
 
                     <div className="input-group self-description-group">
 
@@ -385,11 +498,15 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
 
 
 
-                    {/* HINT */}
+                    {/* =================================================
+                        HINT
+                    ================================================= */}
 
                     <p className="form-hint">
 
-                        <span>i</span>
+                        <span>
+                            i
+                        </span>
 
                         Either a Resume or a Self Description is
                         required to generate a personalized plan.
@@ -400,14 +517,20 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
 
 
 
-                {/* FORM FOOTER */}
+                {/* =================================================
+                    FORM FOOTER
+                ================================================= */}
 
                 <footer className="card-footer">
 
                     <small>
 
                         AI-Powered Strategy Generation
-                        <b> • </b>
+
+                        <b>
+                            {" • "}
+                        </b>
+
                         Approx 30s
 
                     </small>
@@ -493,6 +616,7 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
                     <span className="reports-count">
 
                         {reports.length}{" "}
+
                         {reports.length === 1
                             ? "Report"
                             : "Reports"
@@ -576,7 +700,9 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
                                         <span className="report-card__score">
 
                                             {report?.matchScore ?? 0}%
+
                                             {" "}
+
                                             Match
 
                                         </span>
@@ -607,7 +733,9 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
 
 
 
-                                    {/* SKILLS */}
+                                    {/* =================================================
+                                        SKILLS
+                                    ================================================= */}
 
                                     {Array.isArray(
                                         report?.skillGaps
@@ -639,7 +767,9 @@ e.g. "Senior Frontend Engineer requires proficiency in React, TypeScript, and sy
 
 
 
-                                    {/* CARD FOOTER */}
+                                    {/* =================================================
+                                        CARD FOOTER
+                                    ================================================= */}
 
                                     <div className="report-card__footer">
 
