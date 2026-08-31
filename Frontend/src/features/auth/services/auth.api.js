@@ -83,23 +83,18 @@ export async function login({
 // =====================================================
 
 export async function logout() {
-
     try {
-
-        // IMPORTANT:
-        // Backend logout route is POST
         const response = await axios.post(
             `${API_URL}/logout`,
             {},
             {
-                withCredentials: true
+                withCredentials: true,
             }
         );
 
         return response.data;
 
     } catch (err) {
-
         console.error(
             "Logout Error:",
             err.response?.data || err.message
